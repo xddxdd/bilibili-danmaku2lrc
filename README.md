@@ -1,14 +1,21 @@
 # Bilibili-Danmaku2LRC
+
 提取 Bilibili 视频的底端弹幕，并转换成 LRC 格式
+
 支持多P视频中某一P提取，程序会自动识别多P视频
 
 # 依赖关系
+
 本软件依赖 Python Requests 模块。
+
 `pip3 install requests`
 
 # 使用
+
 下载后运行，按提示操作即可。
+
 `python3 bilibili-danmaku2lrc.py`
+
 可以在源代码里修改一些参数，见代码内注释
 
 # 示例
