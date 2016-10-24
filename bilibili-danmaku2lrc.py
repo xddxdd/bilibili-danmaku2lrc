@@ -74,30 +74,25 @@ def processDMLine(dmLine):
     }
     if(int(dmMeta[1]) >= 1 and int(dmMeta[1]) <= 3):
         dmData['type'] = 'standard'
+    elif(int(dmMeta[1]) == 4):
+        dmData['type'] = 'bottom'
+    elif(int(dmMeta[1]) == 5):
+        dmData['type'] = 'top'
+    elif(int(dmMeta[1]) == 6):
+        dmData['type'] = 'reverse'
+    elif(int(dmMeta[1]) == 7):
+        dmData['type'] = 'advanced'
+    elif(int(dmMeta[1]) == 8):
+        dmData['type'] = 'code'
     else:
-        if(int(dmMeta[1]) == 4):
-            dmData['type'] = 'bottom'
-        else:
-            if(int(dmMeta[1]) == 5):
-                dmData['type'] = 'top'
-            else:
-                if(int(dmMeta[1]) == 6):
-                    dmData['type'] = 'reverse'
-                else:
-                    if(int(dmMeta[1]) == 7):
-                        dmData['type'] = 'advanced'
-                    else:
-                        if(int(dmMeta[1]) == 8):
-                            dmData['type'] = 'code'
-                        else:
-                            dmData['type'] = dmMeta[1]
+        dmData['type'] = dmMeta[1]
+
     if(int(dmMeta[2]) == 25):
         dmData['size'] = 'normal'
+    elif(int(dmMeta[2]) == 18):
+        dmData['size'] = 'small'
     else:
-        if(int(dmMeta[2]) == 18):
-            dmData['size'] = 'small'
-        else:
-            dmData['size'] = dmMeta[2]
+        dmData['size'] = dmMeta[2]
 
     dmData['color'] = str(hex(int(dmMeta[3])))[2:]
     while(len(dmData['color']) < 6):
@@ -105,14 +100,13 @@ def processDMLine(dmLine):
 
     if(int(dmMeta[5]) == 0):
         dmData['pool'] = 'standard'
+    elif(int(dmMeta[5]) == 1):
+        dmData['pool'] = 'subtitle'
+    elif(int(dmMeta[5]) == 2):
+        dmData['pool'] == 'advanced'
     else:
-        if(int(dmMeta[5]) == 1):
-            dmData['pool'] = 'subtitle'
-        else:
-            if(int(dmMeta[5]) == 2):
-                dmData['pool'] == 'advanced'
-            else:
-                dmData['pool'] == dmMeta[5]
+        dmData['pool'] == dmMeta[5]
+        
     return dmData
 
 def exportSubtitleDM(dmData):
