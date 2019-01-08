@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 import sys, requests
 
 try:
@@ -29,6 +29,9 @@ cfg = {
     # 字幕判断阈值
     # - 某个用户发送的底端/顶端弹幕达到这个数量以上才会被判断为弹幕
     'subtitleThreshold' : 10
+}
+requestHeader = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
 }
 # 主要代码开始
 
@@ -106,15 +109,15 @@ def processDMLine(dmLine):
         dmData['pool'] == 'advanced'
     else:
         dmData['pool'] == dmMeta[5]
-        
+
     return dmData
 
 def exportSubtitleDM(dmData):
     startPos = dmData.find('<d p=')
     if(startPos == -1):
         return False
-    dmData = dmData[startPos : -6]
-    dmArray = dmData.splitlines()
+    dmData = dmData[startPos : -4]
+    dmArray = dmData.replace('</d><d', '</d>\n<d').splitlines()
     response = []
     for dmLine in dmArray:
         dmMeta = processDMLine(dmLine)
@@ -151,7 +154,8 @@ avPage = 0
 try:
     if(cfg['getDmidFrom'] == 'pagelist' or cfg['getDmidFrom'] == 'both'):
         # pagelist 方式处理过程
-        videoMetaRequest = requests.get('http://www.bilibili.com/widget/getPageList?aid=' + str(avID))
+        videoMetaRequest = requests.get('http://www.bilibili.com/widget/getPageList?aid=' + str(avID), headers = requestHeader)
+        videoMetaRequest.encoding = 'utf-8'
         if(videoMetaRequest.status_code != 200):
             # Fallback 到 webpage 方式
             print('X 获取 PageList API 失败, 转为直接获取播放页面')
@@ -168,9 +172,13 @@ try:
         if(avPage == 0):
             avPage = inputDigit('? 输入视频页码: #', 1)
         if(avPage == 1):
-            videoPage = requests.get('http://www.bilibili.com/video/av' + str(avID) + '/').text
+            videoPageRequest = requests.get('http://www.bilibili.com/video/av' + str(avID) + '/', headers = requestHeader)
+            videoPageRequest.encoding = 'utf-8'
+            videoPage = videoPageRequest.text
         else:
-            videoPage = requests.get('http://www.bilibili.com/video/av' + str(avID) + '/index_' + str(avPage) + '.html').text
+            videoPageRequest = requests.get('http://www.bilibili.com/video/av' + str(avID) + '/index_' + str(avPage) + '.html', headers = requestHeader)
+            videoPageRequest.encoding = 'utf-8'
+            videoPage = videoPageRequest.text
 except:
     print('X 视频信息获取失败，原因可能是:')
     print('  - 网络连接不稳定')
@@ -179,7 +187,7 @@ except:
 else:
     if(cfg['getDmidFrom'] == 'webpage'):
         videoInfo = {
-            'title' : stripStr(videoPage, '<title>', '</title>').split('_')[0],
+            'title' : stripStr(videoPage, '<title', '</title>').split('>')[1].split('_')[0],
             'id' : avID,
             'dmid' : int(stripStr(videoPage, 'cid=', '&'))
         }
@@ -191,7 +199,7 @@ else:
         }
     if(cfg['getDmidFrom'] == 'both'):
         videoInfo = {
-            'title': stripStr(videoPage, '<title>', '</title>').split('_')[0],
+            'title': stripStr(videoPage, '<title', '</title>').split('>')[1].split('_')[0],
             'id': avID,
             'dmid': int(videoMeta[avPage - 1]['cid'])
         }
@@ -218,7 +226,9 @@ else:
             print('  - Bilibili 改版, 原获取方式失效')
             print('  - 网络不稳定')
     else:
-        dmData = requests.get('http://comment.bilibili.com/%i.xml' % videoInfo['dmid']).text
+        dmRequest = requests.get('http://comment.bilibili.com/%i.xml' % videoInfo['dmid'], headers = requestHeader)
+        dmRequest.encoding = 'utf-8'
+        dmData = dmRequest.text
         subtitleDmData = exportSubtitleDM(dmData)
 
         subtitleDmAuthors = {}
